@@ -30,7 +30,7 @@ function createGitDirectory() {
 }
 function Catit(){
     const flag = process.argv[3];
-    const shahash = process.argv[4];4
+    const shahash = process.argv[4];
     const command = new CatFileCommand(flag,shahash);
     client.run(command);
 }
