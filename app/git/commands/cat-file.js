@@ -15,13 +15,13 @@ class CatFileCommand {
                 const file = hash.slice(2);
                 const completePath = path.join(
                     process.cwd(),
-                    ".git",
-                    "objects",
+                    '.git',
+                    'object',
                     folder, 
                     file
                 );
                 if(fs.existsSync(completePath)){
-                  throw new Error(`Not a valid object name ${hash}`);
+                  throw new Error(`Not a valid object name ${this.shahash}`);
                 }
                 const fileContents =fs.readFileSync(completePath);
                 const outputBuffer = zlib.inflateSync(fileContents);
