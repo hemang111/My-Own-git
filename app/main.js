@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const GitClient = require("./git/client")
-const {CatFileCommand} = require("./git/commands");
+const {CatFileCommand,HashwriteCommand} = require("./git/commands");
 const client = new GitClient();
 // You can use print statements as follows for debugging, they'll be visible when running tests.
 console.error("Logs from your program will appear here!");
@@ -15,7 +15,13 @@ switch (command) {
     break;
   case "cat-file":
     Catit();
-    break;  
+    break; 
+  case "hash-object":{
+    const file = process.argv[4];
+    const command = new HashwriteCommand(file);
+    client.run(command);
+   }
+   break;
   default:
     throw new Error(`Unknown command ${command}`);
 }
