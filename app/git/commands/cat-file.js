@@ -1,7 +1,6 @@
 const path = require("path");
 const fs = require('fs');
 const zlib = require("zlib");
-const { error } = require("console");
 class CatFileCommand {
     constructor(flag, shahash) {
         this.flag = flag;
@@ -28,8 +27,7 @@ class CatFileCommand {
                 const outputBuffer = zlib.inflateSync(fileContents);
                 process.stdout.write(outputBuffer.toString().split("/x00")[1]);
             }
-            break;
-       
+             break;
         }
     }
 }

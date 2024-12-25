@@ -1,2 +1,2 @@
 const CatFileCommand = require("./cat-file");
-module.exports = CatFileCommand;
+module.exports = {CatFileCommand};
