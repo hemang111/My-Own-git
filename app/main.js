@@ -13,7 +13,7 @@ switch (command) {
   case "init":
     createGitDirectory();
     break;
-  case "catfile":
+  case "cat-file":
     Catit();
     break;  
   default:
