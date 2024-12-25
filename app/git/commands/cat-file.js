@@ -16,16 +16,17 @@ class CatFileCommand {
                 const completePath = path.join(
                     process.cwd(),
                     '.git',
-                    'object',
+                    'objects',
                     folder, 
                     file
                 );
-                if(fs.existsSync(completePath)){
+                if(!fs.existsSync(completePath)){
                   throw new Error(`Not a valid object name ${this.shahash}`);
                 }
                 const fileContents =fs.readFileSync(completePath);
                 const outputBuffer = zlib.inflateSync(fileContents);
-                process.stdout.write(outputBuffer.toString().split("/x00")[1]);
+                const output = outputBuffer.toString()
+                process.stdout.write(output);
             }
              break;
         }
