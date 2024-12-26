@@ -32,9 +32,9 @@ class write_tree_git {
             for (const dirContent of dirContents) {
                 if (dirContent.includes(".git")) continue;
                 const currentPath = path.join(basePath, dirContent);
-                const stat = fs.statSync(currentPath);
+                let stat = fs.statSync(currentPath);
                 if (stat.isDirectory()) {
-                    const sha = yaartree(basePath);
+                    const sha = yaartree(currentPath);
                     if (sha) {
                         result.push({
                             mode: "40000",
