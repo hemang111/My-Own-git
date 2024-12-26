@@ -21,7 +21,7 @@ class HashwriteCommand {
             path.join(process.cwd(), '.git', 'objects', objdir, objFile),
             zlib.deflateSync(content),
         );
-        console.log(`Commited Sha : ${SHAb}\n`);
+        // console.log(`Commited Sha : ${SHAb}\n`);
         process.stdout.write(`${SHAb}\n`);
         }
 }
