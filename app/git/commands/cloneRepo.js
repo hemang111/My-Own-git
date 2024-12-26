@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const axios = require("axios");
+const https = require("https");
 const zlib = require("zlib");
 const crypto = require("crypto");
 
@@ -19,10 +19,12 @@ class CloneRepo {
             const refs = await this.fetchRefs();
 
             // Step 3: Download the packfile and unpack the objects
-            const packfile = await this.downloadPackfile();
+            const packfile = await this.downloadPackfile(refs);
+
+            // Step 4: Unpack and store objects
             this.unpackPackfile(packfile);
 
-            // Step 4: Write Git metadata (e.g., HEAD, refs/heads)
+            // Step 5: Write Git metadata (e.g., HEAD, refs/heads)
             this.writeGitMetadata(refs);
 
             console.log(`Repository cloned into ${this.cloneDir}`);
@@ -41,38 +43,72 @@ class CloneRepo {
         console.log(".git directory initialized.");
     }
 
-    // Step 2: Fetch repository references (e.g., branches)
-    async fetchRefs() {
-        const refsUrl = `${this.repoUrl}/info/refs?service=git-upload-pack`;
+    // Step 2: Fetch repository references (e.g., branches, tags)
+    fetchRefs() {
+        return new Promise((resolve, reject) => {
+            const refsUrl = `${this.repoUrl}/info/refs?service=git-upload-pack`;
 
-        try {
-            const response = await axios.get(refsUrl, {
-                headers: { 'User-Agent': 'Custom-Git-Clone' },
+            const client = this.repoUrl.startsWith("https") ? https : http;
+
+            client.get(refsUrl, (res) => {
+                let data = "";
+                res.on("data", (chunk) => {
+                    data += chunk;
+                });
+                res.on("end", () => {
+                    const refs = this.parseRefs(data);
+                    resolve(refs);
+                });
+            }).on("error", (err) => {
+                reject(new Error("Error fetching refs: " + err.message));
             });
-            console.log("Fetched refs.");
-            return response.data; // Assuming response is in the format of references
-        } catch (error) {
-            throw new Error("Error fetching refs: " + error.message);
-        }
+        });
+    }
+
+    // Parse the refs response (for simplicity, we'll extract just the main branch)
+    parseRefs(refsData) {
+        // For simplicity, we'll extract the first ref (main branch)
+        const refs = {};
+        const lines = refsData.split("\n");
+        lines.forEach((line) => {
+            const [sha, ref] = line.split("\t");
+            if (ref && ref.startsWith("refs/heads/")) {
+                refs[ref.slice(11)] = sha; // Only interested in heads (branches)
+            }
+        });
+        return refs;
     }
 
     // Step 3: Download the packfile using the git-upload-pack service
-    async downloadPackfile() {
-        const packfileUrl = `${this.repoUrl}/git-upload-pack`;
+    downloadPackfile(refs) {
+        return new Promise((resolve, reject) => {
+            const packfileUrl = `${this.repoUrl}/git-upload-pack`;
 
-        try {
-            const response = await axios.post(packfileUrl, null, {
+            const client = this.repoUrl.startsWith("https") ? https : http;
+
+            const req = client.request(packfileUrl, {
+                method: "POST",
                 headers: {
-                    'User-Agent': 'Custom-Git-Clone',
-                    'Content-Type': 'application/x-git-upload-pack-request',
-                },
-                responseType: 'arraybuffer',
+                    "User-Agent": "Custom-Git-Clone",
+                    "Content-Type": "application/x-git-upload-pack-request",
+                    "Accept-Encoding": "gzip, deflate",
+                }
+            }, (res) => {
+                let data = [];
+                res.on("data", (chunk) => {
+                    data.push(chunk);
+                });
+                res.on("end", () => {
+                    resolve(Buffer.concat(data)); // Return the raw packfile data as a Buffer
+                });
             });
-            console.log("Downloaded packfile.");
-            return response.data; // Return the raw packfile data
-        } catch (error) {
-            throw new Error("Error downloading packfile: " + error.message);
-        }
+
+            req.on("error", (err) => {
+                reject(new Error("Error downloading packfile: " + err.message));
+            });
+
+            req.end(); // End the request
+        });
     }
 
     // Step 4: Unpack the downloaded packfile and store Git objects
@@ -80,7 +116,8 @@ class CloneRepo {
         const decompressedPackfile = zlib.inflateSync(packfile); // Decompress the packfile
         const objectsDir = path.join(this.cloneDir, ".git", "objects");
 
-        // Assume each object is stored in a file after decompression (simplified for the example)
+        // The packfile format needs to be parsed correctly. Here we're assuming a simplified format.
+        // In reality, you'd need to parse the packfile to extract objects and store them accordingly.
         const objectHash = crypto.createHash("sha1").update(decompressedPackfile).digest("hex");
         const objectDir = objectHash.slice(0, 2);
         const objectFile = objectHash.slice(2);
@@ -100,11 +137,11 @@ class CloneRepo {
         fs.writeFileSync(headPath, "ref: refs/heads/main\n");
 
         const refsDir = path.join(gitDir, "refs", "heads");
-        Object.entries(refs).forEach(([ref, hash]) => {
-            const refPath = path.join(refsDir, ref);
-            fs.writeFileSync(refPath, hash);
-            console.log(`Written ref for ${ref} with hash ${hash}`);
-        });
+        for (const [branch, sha] of Object.entries(refs)) {
+            const refPath = path.join(refsDir, branch);
+            fs.writeFileSync(refPath, sha);
+            console.log(`Written ref for ${branch} with hash ${sha}`);
+        }
     }
 }
 
