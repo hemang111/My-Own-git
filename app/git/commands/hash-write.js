@@ -6,7 +6,7 @@ const crypto = require("crypto");
 class HashwriteCommand {
     constructor(file){
         this.file = file;
-        console.log(file);
+        // console.log(file);
     }
     run(){
         const {size} = fs.statSync(this.file);
