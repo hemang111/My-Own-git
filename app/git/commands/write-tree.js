@@ -75,7 +75,7 @@ class write_tree_git {
                 objdir
             )
             if (!fs.existsSync(complete_path)) fs.mkdirSync(complete_path);
-            const data = zlib.deflateSync(blob);
+            const data = zlib.deflateSync(treeData);
             fs.writeFileSync(path.join(complete_path, objFile), data)
             return hash;
         }
