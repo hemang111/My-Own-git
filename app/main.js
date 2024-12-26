@@ -50,7 +50,8 @@ switch (command) {
    case "clone":{
    const repoUrl = process.argv[3];  // GitHub repository URL (e.g., https://github.com/user/repo)
    const cloneDir = process.argv[4]; // Directory where the repo should be cloned
-   CloneRepo(repoUrl, cloneDir);
+   const command = new CloneRepo(repoUrl, cloneDir);
+   client.run(command);
    }
   break;
 
