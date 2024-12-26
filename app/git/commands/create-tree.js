@@ -13,7 +13,7 @@ class create_tree_git {
     const sha = this.sha;
     const folder =  sha.slice(0,2);
     const file = sha.slice(2);
-    const folderpath = path.join(process.cwd(),".git","objects",folder);
+    const folderpath = path.join(process.cwd(),".git" ,"objects",folder);
     const filepath = path.join(folderpath,file);
     if(!fs.existsSync(folderpath)) throw new Error(`Not a valid object name ${sha}`);
     if(!fs.existsSync(filepath)) throw new Error(`Not a valid object name ${sha}`);

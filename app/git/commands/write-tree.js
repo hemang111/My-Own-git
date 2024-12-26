@@ -13,7 +13,7 @@ function writeFileBlob(currentPath) {
     const objFile = SHAb.slice(2);
     const complete_path = path.join(process.cwd(), ".git", "objects", objdir);
 
-    if (!fs.existsSync(complete_path)) fs.mkdirSync(complete_path);
+    if (!fs.existsSync(complete_path)) fs.mkdirSync((complete_path),{recursive:true});
     const data = zlib.deflateSync(blob);
     fs.writeFileSync(path.join(complete_path, objFile), data);
     return SHAb;
@@ -76,7 +76,7 @@ class write_tree_git {
             const objFile = hash.slice(2);
             const complete_path = path.join(process.cwd(), ".git", "objects", objdir);
 
-            if (!fs.existsSync(complete_path)) fs.mkdirSync(complete_path);
+            if (!fs.existsSync(complete_path)) fs.mkdirSync(complete_path,{recursive:true});
             const data = zlib.deflateSync(tree); // Compressing the tree object
             fs.writeFileSync(path.join(complete_path, objFile), data);
 
@@ -85,6 +85,7 @@ class write_tree_git {
 
         const sha = yaartree(process.cwd());
         process.stdout.write(sha);
+        console.log(`${sha}`);
     }
 }
 
