@@ -23,7 +23,7 @@ class create_tree_git {
     
     const treeContent = output.slice(1).filter(e=> e.includes(" "));
     const names  = treeContent.map((e) => e.split(" ")[1]);
-    names.forEach(name=> process.stdout.write(`${name} \n`))
+    names.forEach(name=> process.stdout.write(`${name}\n`))
 }
 }
 module.exports = create_tree_git;
