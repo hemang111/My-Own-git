@@ -1,3 +1,6 @@
+const path = require("path");
+const zlib = require("zlib");
+
 class create_tree_git{
  constructor(sha){
    this.sha = sha;
