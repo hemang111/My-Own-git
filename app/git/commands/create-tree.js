@@ -30,19 +30,38 @@ class create_tree_git {
       let inflatedContent;
 
       try {
-        inflatedContent = zlib.inflateSync(fileContent).toString().split("\0");
+        inflatedContent = zlib.inflateSync(fileContent);
       } catch (e) {
         throw new Error(`Failed to decompress the Git object file: ${e.message}`);
       }
 
-      // Extract and process the tree object content
-      let content = inflatedContent.slice(1).filter((value) => value.includes(" "));
-      if (content.length === 0) {
-        throw new Error("The decompressed content does not appear to be a valid tree object.");
+      // Parse the decompressed content
+      const headerEnd = inflatedContent.indexOf(0); // Locate the end of the header
+      if (headerEnd === -1) {
+        throw new Error("Malformed tree object: Missing header.");
       }
 
-      let names = content.map((value) => value.split(" ")[1]);
-      names.forEach((name) => process.stdout.write(`${name}\n`));
+      const treeContent = inflatedContent.slice(headerEnd + 1); // Skip the header
+      let offset = 0;
+
+      while (offset < treeContent.length) {
+        // Read the mode (e.g., "100644", "40000")
+        const spaceIndex = treeContent.indexOf(0x20, offset);
+        if (spaceIndex === -1) break;
+
+        const mode = treeContent.slice(offset, spaceIndex).toString("utf8");
+        offset = spaceIndex + 1;
+
+        // Read the filename (null-terminated)
+        const nullIndex = treeContent.indexOf(0x00, offset);
+        if (nullIndex === -1) break;
+
+        const filename = treeContent.slice(offset, nullIndex).toString("utf8");
+        offset = nullIndex + 21; // Skip the filename and SHA (20 bytes + null terminator)
+
+        // Output the filename
+        process.stdout.write(`${filename}\n`);
+      }
     } catch (error) {
       process.stderr.write(`Error: ${error.message}\n`);
     }
