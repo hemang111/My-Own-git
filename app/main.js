@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const GitClient = require("./git/client")
-const { CatFileCommand, HashwriteCommand, create_tree_git, write_tree_git, commit_tree, CloneRepo, add_file } = require("./git/commands");
+const { CatFileCommand, HashwriteCommand, create_tree_git, write_tree_git, commit_tree, CloneRepo, add_file,log_git} = require("./git/commands");
 const { console } = require("inspector");
 const client = new GitClient();
 // You can use print statements as follows for debugging, they'll be visible when running tests.
@@ -69,6 +69,11 @@ switch (command) {
     }
   }
     break;
+  case "log":{
+     const command = new log_git();
+     client.run(command);
+  }
+  break;
   default:
     throw new Error(`Unknown command ${command}`);
 }

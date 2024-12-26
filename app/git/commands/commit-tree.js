@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const zlib = require("zlib");
 const crypto = require("crypto");
+
 class commit_tree {
     constructor(tree, commit, message) {
         this.treeSHA = tree;
@@ -28,6 +29,7 @@ class commit_tree {
             path.join(process.cwd(), '.git', 'objects', objdir, objFile),
             zlib.deflateSync(data),
         );
+
         process.stdout.write(`${SHAb}\n`);
     }
 }
