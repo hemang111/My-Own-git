@@ -66,8 +66,8 @@ class write_tree_git {
             const tree = Buffer.concat([Buffer.from(`tree ${treeData.length}\0`),
                 treeData]);
             const hash = crypto.createHash("sha1").update(tree).digest("hex");
-            const objdir = SHAb.slice(0, 2);
-            const objFile = SHAb.slice(2);
+            const objdir = hash.slice(0, 2);
+            const objFile = hash.slice(2);
             const complete_path = path.join(
                 process.cwd(),
                 ".git",
