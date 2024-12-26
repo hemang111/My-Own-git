@@ -1,14 +1,13 @@
 const fs = require("fs");
 const path = require("path");
 const GitClient = require("./git/client")
-const {CatFileCommand,HashwriteCommand} = require("./git/commands");
+const {CatFileCommand,HashwriteCommand,create_tree_git} = require("./git/commands");
 const client = new GitClient();
 // You can use print statements as follows for debugging, they'll be visible when running tests.
 console.error("Logs from your program will appear here!");
 
 // Uncomment this block to pass the first stage
 const command = process.argv[2];
-
 switch (command) {
   case "init":
     createGitDirectory();
@@ -20,6 +19,15 @@ switch (command) {
     const file = process.argv[4];
     const command = new HashwriteCommand(file);
     client.run(command);
+   }
+   break;
+   case "ls-tree":{
+    const flag = process.argv[3];
+    if(flag == "--name-only"){
+      const sha = process.argv[4];
+      const command = new create_tree_git(sha);
+      client.run(command);
+    }
    }
    break;
   default:
