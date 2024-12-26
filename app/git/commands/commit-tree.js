@@ -17,7 +17,7 @@ class commit_tree {
             Buffer.from(`${this.message}\n`),
         ])
         const header = `commit ${commitBuffer.length}\0`;
-        const data = Buffer.concat(Buffer.from(header), commitBuffer);
+        const data = Buffer.concat([Buffer.from(header), commitBuffer]);
         const SHAb = crypto.createHash("sha1").update(data).digest("hex");
         const objdir = SHAb.slice(0, 2);
         const objFile = SHAb.slice(2);
