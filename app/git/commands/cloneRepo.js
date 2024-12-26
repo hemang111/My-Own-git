@@ -22,7 +22,7 @@ class CloneRepo {
             const packfile = await this.downloadPackfile(refs);
 
             // Step 4: Unpack and store objects
-            this.unpackPackfile(packfile);
+            await this.unpackPackfile(packfile);
 
             // Step 5: Write Git metadata (e.g., HEAD, refs/heads)
             this.writeGitMetadata(refs);
@@ -43,7 +43,7 @@ class CloneRepo {
         console.log(".git directory initialized.");
     }
 
-    // Step 2: Fetch repository references (e.g., branches, tags)
+    // Step 2: Fetch repository references (e.g., branches)
     fetchRefs() {
         return new Promise((resolve, reject) => {
             const refsUrl = `${this.repoUrl}/info/refs?service=git-upload-pack`;
@@ -67,7 +67,6 @@ class CloneRepo {
 
     // Parse the refs response (for simplicity, we'll extract just the main branch)
     parseRefs(refsData) {
-        // For simplicity, we'll extract the first ref (main branch)
         const refs = {};
         const lines = refsData.split("\n");
         lines.forEach((line) => {
@@ -112,25 +111,50 @@ class CloneRepo {
     }
 
     // Step 4: Unpack the downloaded packfile and store Git objects
-    unpackPackfile(packfile) {
+    async unpackPackfile(packfile) {
         const decompressedPackfile = zlib.inflateSync(packfile); // Decompress the packfile
         const objectsDir = path.join(this.cloneDir, ".git", "objects");
 
-        // The packfile format needs to be parsed correctly. Here we're assuming a simplified format.
-        // In reality, you'd need to parse the packfile to extract objects and store them accordingly.
-        const objectHash = crypto.createHash("sha1").update(decompressedPackfile).digest("hex");
-        const objectDir = objectHash.slice(0, 2);
-        const objectFile = objectHash.slice(2);
+        // Parsing the packfile should be done carefully to ensure the objects are extracted
+        // Git uses a specific format for its objects and packfiles, which should be handled.
+        // This section needs to unpack each object in the packfile.
 
-        fs.mkdirSync(path.join(objectsDir, objectDir), { recursive: true });
-        fs.writeFileSync(
-            path.join(objectsDir, objectDir, objectFile),
-            zlib.deflateSync(decompressedPackfile),
-        );
-        console.log(`Unpacked packfile and stored object with SHA1: ${objectHash}`);
+        let offset = 0;
+        while (offset < decompressedPackfile.length) {
+            const objectHeader = this.readObjectHeader(decompressedPackfile, offset);
+            const objectData = decompressedPackfile.slice(offset + objectHeader.size);
+            const objectHash = crypto.createHash("sha1").update(objectData).digest("hex");
+
+            const objectDir = objectHash.slice(0, 2);
+            const objectFile = objectHash.slice(2);
+
+            // Store the object in the .git/objects directory
+            fs.mkdirSync(path.join(objectsDir, objectDir), { recursive: true });
+            fs.writeFileSync(
+                path.join(objectsDir, objectDir, objectFile),
+                zlib.deflateSync(objectData)
+            );
+
+            // Move to the next object in the packfile
+            offset += objectHeader.size + objectData.length;
+        }
+
+        console.log("Packfile unpacked and objects stored.");
     }
 
-    // Step 5: Write Git metadata such as HEAD and refs
+    // Read the object header (Git object format parsing)
+    readObjectHeader(packfile, offset) {
+        const header = packfile.slice(offset, offset + 12);
+        const objectType = header[0]; // This will determine the object type (commit, tree, blob, etc.)
+        const size = header.readUInt32BE(4); // The size of the object data
+
+        return {
+            type: objectType,
+            size: size,
+        };
+    }
+
+    // Step 5: Write Git metadata (e.g., HEAD, refs/heads)
     writeGitMetadata(refs) {
         const gitDir = path.join(this.cloneDir, ".git");
         const headPath = path.join(gitDir, "HEAD");
