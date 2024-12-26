@@ -12,38 +12,37 @@ class CloneRepo {
 
     async run() {
         try {
-            // Step 1: Initialize the .git directory
+            // Step 1: Initialize .git directory
             this.initializeGitDir();
 
-            // Step 2: Fetch repository references (e.g., branches, tags)
+            // Step 2: Fetch repository refs (branches, etc.)
             const refs = await this.fetchRefs();
 
-            // Step 3: Download the packfile and unpack the objects
-            const packfile = await this.downloadPackfile(refs);
+            // Step 3: Download the packfile
+            const packfile = await this.downloadPackfile();
 
-            // Step 4: Unpack and store objects
+            // Step 4: Unpack and store the objects
             await this.unpackPackfile(packfile);
 
-            // Step 5: Write Git metadata (e.g., HEAD, refs/heads)
+            // Step 5: Write the Git metadata
             this.writeGitMetadata(refs);
 
-            console.log(`Repository cloned into ${this.cloneDir}`);
+            process.stdout.write(`Repository cloned into ${this.cloneDir}\n`);
         } catch (error) {
-            console.error("Error during clone operation:", error.message);
+            process.stdout.write("Error during clone operation: " + error.message + "\n");
         }
     }
 
-    // Step 1: Initialize the .git directory structure
     initializeGitDir() {
         fs.mkdirSync(path.join(this.cloneDir, ".git"), { recursive: true });
         fs.mkdirSync(path.join(this.cloneDir, ".git", "objects"), { recursive: true });
         fs.mkdirSync(path.join(this.cloneDir, ".git", "refs"), { recursive: true });
         fs.mkdirSync(path.join(this.cloneDir, ".git", "refs", "heads"), { recursive: true });
         fs.writeFileSync(path.join(this.cloneDir, ".git", "HEAD"), "ref: refs/heads/main\n");
-        console.log(".git directory initialized.");
+        process.stdout.write(".git directory initialized.\n");
     }
 
-    // Step 2: Fetch repository references (e.g., branches)
+    // Step 2: Fetch repository refs
     fetchRefs() {
         return new Promise((resolve, reject) => {
             const refsUrl = `${this.repoUrl}/info/refs?service=git-upload-pack`;
@@ -65,7 +64,6 @@ class CloneRepo {
         });
     }
 
-    // Parse the refs response (for simplicity, we'll extract just the main branch)
     parseRefs(refsData) {
         const refs = {};
         const lines = refsData.split("\n");
@@ -78,8 +76,8 @@ class CloneRepo {
         return refs;
     }
 
-    // Step 3: Download the packfile using the git-upload-pack service
-    downloadPackfile(refs) {
+    // Step 3: Download the packfile
+    downloadPackfile() {
         return new Promise((resolve, reject) => {
             const packfileUrl = `${this.repoUrl}/git-upload-pack`;
 
@@ -98,7 +96,9 @@ class CloneRepo {
                     data.push(chunk);
                 });
                 res.on("end", () => {
-                    resolve(Buffer.concat(data)); // Return the raw packfile data as a Buffer
+                    const rawData = Buffer.concat(data); // Ensure we get the entire packfile
+                    process.stdout.write(`Packfile size: ${rawData.length} bytes\n`); // Log the size for debugging
+                    resolve(rawData);
                 });
             });
 
@@ -106,47 +106,52 @@ class CloneRepo {
                 reject(new Error("Error downloading packfile: " + err.message));
             });
 
-            req.end(); // End the request
+            req.end();
         });
     }
 
-    // Step 4: Unpack the downloaded packfile and store Git objects
+    // Step 4: Unpack the downloaded packfile
     async unpackPackfile(packfile) {
-        const decompressedPackfile = zlib.inflateSync(packfile); // Decompress the packfile
-        const objectsDir = path.join(this.cloneDir, ".git", "objects");
+        try {
+            const decompressedPackfile = zlib.inflateSync(packfile); // Decompress the packfile
+            const objectsDir = path.join(this.cloneDir, ".git", "objects");
 
-        // Parsing the packfile should be done carefully to ensure the objects are extracted
-        // Git uses a specific format for its objects and packfiles, which should be handled.
-        // This section needs to unpack each object in the packfile.
+            // Check decompressed packfile size
+            process.stdout.write(`Decompressed packfile size: ${decompressedPackfile.length} bytes\n`);
 
-        let offset = 0;
-        while (offset < decompressedPackfile.length) {
-            const objectHeader = this.readObjectHeader(decompressedPackfile, offset);
-            const objectData = decompressedPackfile.slice(offset + objectHeader.size);
-            const objectHash = crypto.createHash("sha1").update(objectData).digest("hex");
+            let offset = 0;
+            while (offset < decompressedPackfile.length) {
+                const objectHeader = this.readObjectHeader(decompressedPackfile, offset);
+                const objectData = decompressedPackfile.slice(offset + objectHeader.size);
+                const objectHash = crypto.createHash("sha1").update(objectData).digest("hex");
 
-            const objectDir = objectHash.slice(0, 2);
-            const objectFile = objectHash.slice(2);
+                const objectDir = objectHash.slice(0, 2);
+                const objectFile = objectHash.slice(2);
 
-            // Store the object in the .git/objects directory
-            fs.mkdirSync(path.join(objectsDir, objectDir), { recursive: true });
-            fs.writeFileSync(
-                path.join(objectsDir, objectDir, objectFile),
-                zlib.deflateSync(objectData)
-            );
+                // Log object details for debugging
+                process.stdout.write(`Unpacking object: ${objectHash} (type: ${objectHeader.type}, size: ${objectData.length} bytes)\n`);
 
-            // Move to the next object in the packfile
-            offset += objectHeader.size + objectData.length;
+                // Store the object
+                fs.mkdirSync(path.join(objectsDir, objectDir), { recursive: true });
+                fs.writeFileSync(
+                    path.join(objectsDir, objectDir, objectFile),
+                    zlib.deflateSync(objectData) // Store the object in a compressed format
+                );
+
+                offset += objectHeader.size + objectData.length;
+            }
+
+            process.stdout.write("Packfile unpacked and objects stored.\n");
+        } catch (error) {
+            process.stdout.write("Error unpacking the packfile: " + error.message + "\n");
         }
-
-        console.log("Packfile unpacked and objects stored.");
     }
 
-    // Read the object header (Git object format parsing)
+    // Read object header (Git object format)
     readObjectHeader(packfile, offset) {
         const header = packfile.slice(offset, offset + 12);
-        const objectType = header[0]; // This will determine the object type (commit, tree, blob, etc.)
-        const size = header.readUInt32BE(4); // The size of the object data
+        const objectType = header[0]; // Object type (commit, tree, blob)
+        const size = header.readUInt32BE(4); // Size of the object
 
         return {
             type: objectType,
@@ -164,7 +169,7 @@ class CloneRepo {
         for (const [branch, sha] of Object.entries(refs)) {
             const refPath = path.join(refsDir, branch);
             fs.writeFileSync(refPath, sha);
-            console.log(`Written ref for ${branch} with hash ${sha}`);
+            process.stdout.write(`Written ref for ${branch} with hash ${sha}\n`);
         }
     }
 }
