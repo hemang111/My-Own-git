@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const GitClient = require("./git/client")
-const {CatFileCommand,HashwriteCommand,create_tree_git, write_tree_git,commit_tree} = require("./git/commands");
+const {CatFileCommand,HashwriteCommand,create_tree_git, write_tree_git,commit_tree,CloneRepo} = require("./git/commands");
 const { console } = require("inspector");
 const client = new GitClient();
 // You can use print statements as follows for debugging, they'll be visible when running tests.
@@ -47,6 +47,13 @@ switch (command) {
      client.run(command);     
    }
    break;
+   case "clone":{
+   const repoUrl = process.argv[3];  // GitHub repository URL (e.g., https://github.com/user/repo)
+   const cloneDir = process.argv[4]; // Directory where the repo should be cloned
+   CloneRepo(repoUrl, cloneDir);
+   }
+  break;
+
   default:
     throw new Error(`Unknown command ${command}`);
 }
