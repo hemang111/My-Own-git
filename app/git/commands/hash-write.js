@@ -10,7 +10,7 @@ class HashwriteCommand {
     }
     run(){
         const {size} = fs.statSync(this.file);
-        const content = `blob ${size} \0 ${fs.readFileSync(this.file).toString()}`;
+        const content = `blob ${size}\0${fs.readFileSync(this.file).toString()}`;
         const SHAb = crypto.createHash("sha1").update(content).digest("hex");
         const objdir = SHAb.slice(0,2);
         const objFile = SHAb.slice(2);
