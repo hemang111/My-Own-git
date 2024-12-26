@@ -24,8 +24,6 @@ class create_tree_git {
       if (!fs.existsSync(filePath)) {
         throw new Error(`Git object file not found: ${filePath}`);
       }
-
-      // Read and decompress the file
       const fileContent = fs.readFileSync(filePath);
       let inflatedContent;
 
@@ -34,16 +32,12 @@ class create_tree_git {
       } catch (e) {
         throw new Error(`Failed to decompress the Git object file: ${e.message}`);
       }
-
-      // Parse the decompressed content
-      const headerEnd = inflatedContent.indexOf(0); // Locate the end of the header
+      const headerEnd = inflatedContent.indexOf(0);
       if (headerEnd === -1) {
         throw new Error("Malformed tree object: Missing header.");
       }
-
-      const treeContent = inflatedContent.slice(headerEnd + 1); // Skip the header
+      const treeContent = inflatedContent.Uint8Array.prototype.slice(headerEnd + 1); 
       let offset = 0;
-
       while (offset < treeContent.length) {
         // Read the mode (e.g., "100644", "40000")
         const spaceIndex = treeContent.indexOf(0x20, offset);
@@ -51,15 +45,11 @@ class create_tree_git {
 
         const mode = treeContent.slice(offset, spaceIndex).toString("utf8");
         offset = spaceIndex + 1;
-
-        // Read the filename (null-terminated)
         const nullIndex = treeContent.indexOf(0x00, offset);
         if (nullIndex === -1) break;
 
         const filename = treeContent.slice(offset, nullIndex).toString("utf8");
-        offset = nullIndex + 21; // Skip the filename and SHA (20 bytes + null terminator)
-
-        // Output the filename
+        offset = nullIndex + 21; 
         process.stdout.write(`${filename}\n`);
       }
     } catch (error) {

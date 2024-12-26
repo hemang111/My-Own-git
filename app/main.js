@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const GitClient = require("./git/client")
-const {CatFileCommand,HashwriteCommand,create_tree_git} = require("./git/commands");
+const {CatFileCommand,HashwriteCommand,create_tree_git, write_tree_git} = require("./git/commands");
 const { console } = require("inspector");
 const client = new GitClient();
 // You can use print statements as follows for debugging, they'll be visible when running tests.
@@ -30,6 +30,10 @@ switch (command) {
       const command = new create_tree_git(sha);
       client.run(command);
     }
+   }
+   case "write-tree":{
+     const command = new write_tree_git();
+     client.run(command);
    }
    break;
   default:
