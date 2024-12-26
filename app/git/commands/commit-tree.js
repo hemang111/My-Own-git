@@ -26,7 +26,7 @@ class commit_tree {
         })
         fs.writeFileSync(
             path.join(process.cwd(), '.git', 'objects', objdir, objFile),
-            zlib.deflateSync(content),
+            zlib.deflateSync(data),
         );
         process.stdout.write(`${SHAb}\n`);
     }
