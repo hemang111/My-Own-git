@@ -33,6 +33,7 @@ switch (command) {
     const command = new create_tree_git(flag,sha);
     client.run(command);
    }
+   break;
    case "write-tree":{
      const command = new write_tree_git();
      client.run(command);
