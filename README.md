@@ -1,59 +1,94 @@
-[![progress-banner](https://backend.codecrafters.io/progress/git/cb366319-4a2c-4c83-8ed8-9b1808880d96)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
+# Custom Git Implementation in Node.js  
 
-This is a starting point for JavaScript solutions to the
-["Build Your Own Git" Challenge](https://codecrafters.io/challenges/git).
+[![progress-banner](https://backend.codecrafters.io/progress/git/cb366319-4a2c-4c83-8ed8-9b1808880d96)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)  
 
-In this challenge, you'll build a small Git implementation that's capable of
-initializing a repository, creating commits and cloning a public repository.
-Along the way we'll learn about the `.git` directory, Git objects (blobs,
-commits, trees etc.), Git's transfer protocols and more.
+This project implements a simplified version of Git in Node.js. The goal is to understand Git internals by building essential functionalities like initializing a repository, hashing objects, and creating trees and commits.  
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+This project is my solution for the [**"Build Your Own Git" Challenge**](https://app.codecrafters.io/challenges/git).  
 
-# Passing the first stage
 
-The entry point for your Git implementation is in `app/main.js`. Study and
-uncomment the relevant code, and push your changes to pass the first stage:
 
-```sh
-git commit -am "pass 1st stage" # any msg
-git push origin master
-```
+## Features  
 
-That's all!
+- **Initialize Repository (`init`)**: Sets up a `.git` directory with the necessary structure.  
+- **Hash Files (`hash-object`)**: Creates a blob object for a file and stores it in the `.git/objects` directory.  
+- **Inspect Objects (`cat-file -p`)**: Reads and displays Git objects (e.g., blobs, trees).  
+- **Write Tree (`write-tree`)**: Generates a tree object from the current directory structure.  
+- **Commit Tree (`commit-tree`)**: Creates a commit object with a tree and parent commit hash.  
+- **List Tree Objects (`ls-tree --name-only`)**: Displays the names of files in a tree object.  
 
-# Stage 2 & beyond
 
-Note: This section is for stages 2 and beyond.
+## Getting Started  
 
-1. Ensure you have `node (21)` installed locally
-1. Run `./your_program.sh` to run your Git implementation, which is implemented
-   in `app/main.js`.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.
+### Prerequisites  
 
-# Testing locally
+- Node.js v18+  
 
-The `your_program.sh` script is expected to operate on the `.git` folder inside
-the current working directory. If you're running this inside the root of this
-repository, you might end up accidentally damaging your repository's `.git`
-folder.
+### Installation  
 
-We suggest executing `your_program.sh` in a different folder when testing
-locally. For example:
+1. Clone this repository to your local machine:  
+   ```bash  
+   git clone https://github.com/your-username/your-repo.git  
+   cd your-repo  
+   ```  
 
-```sh
-mkdir -p /tmp/testing && cd /tmp/testing
-/path/to/your/repo/your_program.sh init
-```
+2. Run the program:  
+   ```bash  
+   node index.js <command> [args]  
+   ```  
 
-To make this easier to type out, you could add a
-[shell alias](https://shapeshed.com/unix-alias/):
 
-```sh
-alias mygit=/path/to/your/repo/your_program.sh
 
-mkdir -p /tmp/testing && cd /tmp/testing
-mygit init
-```
+## Usage  
+
+Once the program is set up, you can use the following commands:  
+
+### Initialize Repository  
+```bash  
+node index.js init  
+```  
+Sets up a `.git` directory in the current folder.  
+
+### Inspect Objects  
+```bash  
+node index.js cat-file -p <sha>  
+```  
+Displays the content of the specified object.  
+
+### Hash Files  
+```bash  
+node index.js hash-object <file-path>  
+```  
+Hashes a file and stores it as a blob object.  
+
+### Write a Tree  
+```bash  
+node index.js write-tree  
+```  
+Creates a tree object representing the current directory.  
+
+### Create a Commit  
+```bash  
+node index.js commit-tree <tree-sha> -p <parent-sha> -m "<commit-message>"  
+```  
+Creates a commit object using a tree, parent commit, and message.  
+
+### List Tree Objects  
+```bash  
+node index.js ls-tree --name-only <sha>  
+```  
+Lists only the names of files in a tree object.  
+
+
+
+## Notes  
+
+- Objects are stored in the `.git/objects` directory.  
+- The `HEAD` file points to the current branch (`refs/heads/main`).  
+
+
+
+## License  
+
+This project is licensed under the MIT License.  
+
