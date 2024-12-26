@@ -24,12 +24,14 @@ switch (command) {
    break;
    case "ls-tree":{
     const flag = process.argv[3];
-    if(flag == "--name-only"){
-      const sha = process.argv[4];
-      console.log(sha);
-      const command = new create_tree_git(sha);
-      client.run(command);
+    const sha = process.argv[4];
+    if(!sha){
+      sha = flag;
+      flag = null;
     }
+    if(flag === "--name-only" && !sha) return;
+    const command = new create_tree_git(flag,sha);
+    client.run(command);
    }
    case "write-tree":{
      const command = new write_tree_git();
