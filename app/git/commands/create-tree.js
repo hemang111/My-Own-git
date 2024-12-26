@@ -20,6 +20,7 @@ class create_tree_git {
     const filedata = fs.readFileSync(filepath);
     const outputBuffer = zlib.inflateSync(filedata);
     const output = outputBuffer.toString().split('\0');
+    
     const treeContent = output.slice(1).filter(e=> e.includes(" "));
     const names  = treeContent.map((e) => e.split(" ")[1]);
     names.forEach(name=> process.stdout.write(`${name} \n`))
