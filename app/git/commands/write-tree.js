@@ -85,6 +85,7 @@ class write_tree_git {
 
         const sha = yaartree(process.cwd());
         process.stdout.write(sha);
+        
         // console.log(`${sha}`);
     }
 }
