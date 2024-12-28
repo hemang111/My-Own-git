@@ -34,7 +34,7 @@ This project is my solution for the [**"Build Your Own Git" Challenge**](https:/
 
 2. Run the program:  
    ```bash  
-   node index.js <command> [args]  
+   node app/main.js <command> [args]  
    ```  
 
 
@@ -45,37 +45,37 @@ Once the program is set up, you can use the following commands:
 
 ### Initialize Repository  
 ```bash  
-node index.js init  
+node app/main.js init  
 ```  
 Sets up a `.git` directory in the current folder.  
 
 ### Inspect Objects  
 ```bash  
-node index.js cat-file -p <sha>  
+node app/main.js cat-file -p <sha>  
 ```  
 Displays the content of the specified object.  
 
 ### Hash Files  
 ```bash  
-node index.js hash-object <file-path>  
+node app/main.js hash-object <file-path>  
 ```  
 Hashes a file and stores it as a blob object.  
 
 ### Write a Tree  
 ```bash  
-node index.js write-tree  
+node app/main.js write-tree  
 ```  
 Creates a tree object representing the current directory.  
 
 ### Create a Commit  
 ```bash  
-node index.js commit-tree <tree-sha> -p <parent-sha> -m "<commit-message>"  
+node app/main.js commit-tree <tree-sha> -p <parent-sha> -m "<commit-message>"  
 ```  
 Creates a commit object using a tree, parent commit, and message.  
 
 ### List Tree Objects  
 ```bash  
-node index.js ls-tree --name-only <sha>  
+node app/main.js ls-tree --name-only <sha>  
 ```  
 Lists only the names of files in a tree object.  
 
